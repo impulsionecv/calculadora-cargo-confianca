@@ -1,212 +1,153 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Calculadora – Cargo de Confiança</title>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  padding: 20px;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-  background: #ffffff;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-h2 {
-  border-bottom: 2px solid #ddd;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-}
-
-label {
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-}
-
-button {
-  margin-top: 20px;
-  padding: 12px;
-  width: 100%;
-  background: #0052cc;
-  color: #ffffff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 15px;
-}
-
-button:hover {
-  background: #003d99;
-}
-
-.result {
-  margin-top: 25px;
-  background: #f0f2f5;
-  padding: 18px;
-  border-radius: 6px;
-  line-height: 1.6;
-}
-
-small {
-  display: block;
-  margin-top: 15px;
-  color: #555;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora – Cargo de Confiança</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 30px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    h2 {
+      margin-top: 30px;
+      color: #374151;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    label {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 30px;
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 10px;
+    }
+    .result p {
+      margin: 6px 0;
+      font-size: 15px;
+    }
+    .highlight {
+      font-weight: 700;
+      color: #111827;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="container">
+    <h1>Calculadora de Cargo de Confiança</h1>
 
-<div class="container">
+    <h2>Dados do Colaborador</h2>
+    <div class="grid">
+      <div>
+        <label>Salário Base (CTPS)</label>
+        <input type="number" id="salarioBase" step="0.01" />
+      </div>
+      <div>
+        <label>Líquido Alvo Mensal</label>
+        <input type="number" id="liquidoAlvo" step="0.01" />
+      </div>
+    </div>
 
-<h2>Calculadora de Cargo de Confiança – 2026</h2>
+    <h2>Férias</h2>
+    <div class="grid">
+      <div>
+        <label>Data Início das Férias</label>
+        <input type="date" id="inicioFerias" />
+      </div>
+      <div>
+        <label>Data Fim das Férias</label>
+        <input type="date" id="fimFerias" />
+      </div>
+    </div>
 
-<div class="grid">
-  <div>
-    <label>Salário Base (CLT)</label>
-    <input type="number" id="salarioBase">
+    <button onclick="calcular()">Calcular</button>
+
+    <div class="result" id="resultado" style="display:none"></div>
   </div>
 
-  <div>
-    <label>Líquido Desejado no Mês</label>
-    <input type="number" id="liquidoDesejado">
-  </div>
+  <script>
+    function formatar(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
-  <div>
-    <label>Início das Férias</label>
-    <input type="date" id="feriasInicio">
-  </div>
+    function calcularDias(inicio, fim) {
+      const dataInicio = new Date(inicio);
+      const dataFim = new Date(fim);
+      const diff = (dataFim - dataInicio) / (1000 * 60 * 60 * 24);
+      return diff + 1;
+    }
 
-  <div>
-    <label>Fim das Férias</label>
-    <input type="date" id="feriasFim">
-  </div>
-</div>
+    function calcular() {
+      const salarioBase = parseFloat(document.getElementById('salarioBase').value);
+      const liquidoAlvo = parseFloat(document.getElementById('liquidoAlvo').value);
+      const inicio = document.getElementById('inicioFerias').value;
+      const fim = document.getElementById('fimFerias').value;
 
-<button onclick="calcular()">Calcular</button>
+      if (!salarioBase || !liquidoAlvo || !inicio || !fim) {
+        alert('Preencha todos os campos');
+        return;
+      }
 
-<div class="result" id="resultado"></div>
+      const diasFerias = calcularDias(inicio, fim);
+      const valorDia = liquidoAlvo / 30;
+      const feriasLiquidas = valorDia * diasFerias;
+      const umTerco = feriasLiquidas / 3;
+      const feriasPagas = feriasLiquidas + umTerco;
+      const saldoFolha = liquidoAlvo - feriasPagas;
 
-<small>
-⚠️ O valor referente ao cargo de confiança não integra a base de cálculo de INSS e IRRF, conforme política interna da empresa.
-</small>
-
-</div>
-
-<script>
-// ---------- FORMATAÇÃO MOEDA ----------
-function formatarMoeda(valor) {
-  return valor.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  });
-}
-
-// ---------- INSS 2026 ----------
-function calcularINSS(salario) {
-  let inss = 0;
-
-  if (salario <= 1412) {
-    inss = salario * 0.075;
-  } else if (salario <= 2666.68) {
-    inss = (1412 * 0.075) +
-           ((salario - 1412) * 0.09);
-  } else if (salario <= 4000.03) {
-    inss = (1412 * 0.075) +
-           (1254.68 * 0.09) +
-           ((salario - 2666.68) * 0.12);
-  } else {
-    inss = (1412 * 0.075) +
-           (1254.68 * 0.09) +
-           (1333.35 * 0.12) +
-           ((salario - 4000.03) * 0.14);
-  }
-
-  return inss;
-}
-
-// ---------- IRRF 2026 ----------
-function calcularIRRF(base) {
-  let ir = 0;
-
-  if (base <= 2259.20) {
-    ir = 0;
-  } else if (base <= 2826.65) {
-    ir = (base * 0.075) - 169.44;
-  } else if (base <= 3751.05) {
-    ir = (base * 0.15) - 381.44;
-  } else if (base <= 4664.68) {
-    ir = (base * 0.225) - 662.77;
-  } else {
-    ir = (base * 0.275) - 896.00;
-  }
-
-  return ir > 0 ? ir : 0;
-}
-
-// ---------- CÁLCULO PRINCIPAL ----------
-function calcular() {
-  const salarioBase = Number(document.getElementById("salarioBase").value);
-  const liquidoDesejado = Number(document.getElementById("liquidoDesejado").value);
-
-  const inicio = document.getElementById("feriasInicio").value;
-  const fim = document.getElementById("feriasFim").value;
-
-  let diasFerias = 0;
-  if (inicio && fim) {
-    const dataInicio = new Date(inicio);
-    const dataFim = new Date(fim);
-    diasFerias = (dataFim - dataInicio) / (1000 * 60 * 60 * 24) + 1;
-  }
-
-  const diasTrabalhados = 30 - diasFerias;
-  const proporcao = diasTrabalhados / 30;
-
-  const salarioBaseProporcional = salarioBase * proporcao;
-
-  const inss = calcularINSS(salarioBaseProporcional);
-  const baseIR = salarioBaseProporcional - inss;
-  const ir = calcularIRRF(baseIR);
-
-  const liquidoBase = salarioBaseProporcional - inss - ir;
-
-  const cargoConfianca = (liquidoDesejado - liquidoBase) * proporcao;
-  const brutoTotal = salarioBaseProporcional + cargoConfianca;
-  const liquidoFinal = liquidoBase + cargoConfianca;
-
-  document.getElementById("resultado").innerHTML = `
-    <b>Dias Trabalhados:</b> ${diasTrabalhados}<br>
-    <b>Salário Base Proporcional:</b> ${formatarMoeda(salarioBaseProporcional)}<br>
-    <b>INSS:</b> ${formatarMoeda(inss)}<br>
-    <b>IRRF:</b> ${formatarMoeda(ir)}<br>
-    <b>Líquido do Salário Base:</b> ${formatarMoeda(liquidoBase)}<br><br>
-
-    <b>Valor do Cargo de Confiança:</b> ${formatarMoeda(cargoConfianca)}<br>
-    <b>Bruto Total:</b> ${formatarMoeda(brutoTotal)}<br>
-    <b>Líquido Final do Mês:</b> <b>${formatarMoeda(liquidoFinal)}</b>
-  `;
-}
-</script>
-
+      const resultado = document.getElementById('resultado');
+      resultado.style.display = 'block';
+      resultado.innerHTML = `
+        <p>Dias de férias: <span class="highlight">${diasFerias}</span></p>
+        <p>Líquido total do mês: <span class="highlight">${formatar(liquidoAlvo)}</span></p>
+        <p>Férias pagas antecipadamente (com 1/3): <span class="highlight">${formatar(feriasPagas)}</span></p>
+        <p>Saldo a receber na folha: <span class="highlight">${formatar(saldoFolha)}</span></p>
+      `;
+    }
+  </script>
 </body>
 </html>
-
