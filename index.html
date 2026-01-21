@@ -118,12 +118,15 @@ function calcular() {
   const inicio = document.getElementById('inicioFerias').value;
   const fim = document.getElementById('fimFerias').value;
 
-  if (!salarioBase || !liquidoAlvo || !inicio || !fim) {
-    alert('Preencha todos os campos');
+  if (!salarioBase || !liquidoAlvo) {
+    alert('Preencha salário base e líquido alvo');
     return;
   }
 
-  const diasFerias = diasEntre(inicio, fim);
+  let diasFerias = 0;
+  if (inicio && fim) {
+    diasFerias = diasEntre(inicio, fim);
+  }
   const diasTrabalhados = 30 - diasFerias;
 
   const baseProporcional = salarioBase / 30 * diasTrabalhados;
