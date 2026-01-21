@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Calculadora – Cargo de Confiança</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  padding: 20px;
+}
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+h2 {
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+label {
+  font-weight: bold;
+}
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+}
+button {
+  margin-top: 20px;
+  padding: 12px;
+  background: #0052cc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover {
+  background: #003d99;
+}
+.result {
+  margin-top: 25px;
+  background: #f0f2f5;
+  padding: 15px;
+  border-radius: 6px;
+}
+small {
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Calculadora de Cargo de Confiança – 2026</h2>
+
+<div class="grid">
+  <div>
+    <label>Salário Base (CLT)</label>
+    <input type="number" id="salarioBase">
+  </div>
+  <div>
+    <label>Líquido Desejado no Mês</label>
+    <input type="number" id="liquidoDesejado">
+  </div>
+
+  <div>
+    <label>Início das Férias</label>
+    <input type="date" id="feriasInicio">
+  </div>
+  <div>
+    <label>Fim das Férias</label>
+    <input type="date" id="feriasFim">
+  </div>
+</div>
+
+<button onclick="calcular()">Calcular</button>
+
+<div class="result" id="resultado"></div>
+
+<small>
+⚠️ Cargo de confiança não integra a base de cálculo de INSS e IRRF, conforme política interna.
+</small>
+
+</div>
+
+<script>
+// ---------- TABELA INSS 2026 ----------
+function calcularINSS(salario) {
+  let inss = 0;
+
+  if (salario <= 1412) {
+    inss = salario * 0.075;
+  } else if (salario <= 2666.68) {
+    inss = (1412 * 0.075) +
+           ((salario - 1412) * 0.09);
+  } else if (salario <= 4000.03) {
+    inss = (1412 * 0.075) +
+           (1254.68 * 0.09) +
+           ((salario - 2666.68) * 0.12);
+  } else {
+    inss = (1412 * 0.075) +
+           (1254.68 * 0.09) +
+           (1333.35 * 0.12) +
+           ((salario - 4000.03) * 0.14);
+  }
+
+  return inss;
+}
+
+// ---------- TABELA IRRF 2026 ----------
+function calcularIRRF(base) {
+  let ir = 0;
+
+  if (base <= 2259.20) {
+    ir = 0;
+  } else if (base <= 2826.65) {
+    ir = (base * 0.075) - 169.44;
+  } else if (base <= 3751.05) {
+    ir = (base * 0.15) - 381.44;
+  } else if (base <= 4664.68) {
+    ir = (base * 0.225) - 662.77;
+  } else {
+    ir = (base * 0.275) - 896.00;
+  }
+
+  return ir > 0 ? ir : 0;
+}
+
+// ---------- CÁLCULO PRINCIPAL ----------
+function calcular() {
+  const salarioBase = Number(document.getElementById("salarioBase").value);
+  const liquidoDesejado = Number(document.getElementById("liquidoDesejado").value);
+
+  const inicio = document.getElementById("feriasInicio").value;
+  const fim = document.getElementById("feriasFim").value;
+
+  let diasFerias = 0;
+  if (inicio && fim) {
+    const dataInicio = new Date(inicio);
+    const dataFim = new Date(fim);
+    diasFerias = (dataFim - dataInicio) / (1000 * 60 * 60 * 24) + 1;
+  }
+
+  const diasTrabalhados = 30 - diasFerias;
+  const proporcao = diasTrabalhados / 30;
+
+  const salarioBaseProporcional = salarioBase * proporcao;
+
+  const inss = calcularINSS(salarioBaseProporcional);
+  const baseIR = salarioBaseProporcional - inss;
+  const ir = calcularIRRF(baseIR);
+
+  const liquidoBase = salarioBaseProporcional - inss - ir;
+
+  const cargoConfianca = (liquidoDesejado - liquidoBase) * proporcao;
+  const brutoTotal = salarioBaseProporcional + cargoConfianca;
+  const liquidoFinal = liquidoBase + cargoConfianca;
+
+  document.getElementById("resultado").innerHTML = `
+    <b>Dias Trabalhados:</b> ${diasTrabalhados}<br>
+    <b>Salário Base Proporcional:</b> R$ ${salarioBaseProporcional.toFixed(2)}<br>
+    <b>INSS:</b> R$ ${inss.toFixed(2)}<br>
+    <b>IRRF:</b> R$ ${ir.toFixed(2)}<br>
+    <b>Líquido do Salário Base:</b> R$ ${liquidoBase.toFixed(2)}<br><br>
+
+    <b>Valor Cargo de Confiança:</b> R$ ${cargoConfianca.toFixed(2)}<br>
+    <b>Bruto Total:</b> R$ ${brutoTotal.toFixed(2)}<br>
+    <b>Líquido Final do Mês:</b> R$ ${liquidoFinal.toFixed(2)}
+  `;
+}
+</script>
+
+</body>
+</html>
