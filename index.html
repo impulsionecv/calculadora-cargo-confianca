@@ -19,14 +19,8 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    h1 {
-      margin-bottom: 20px;
-      color: #1f2937;
-    }
-    h2 {
-      margin-top: 30px;
-      color: #374151;
-    }
+    h1 { color: #1f2937; }
+    h2 { margin-top: 30px; color: #374151; }
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -57,28 +51,18 @@
       font-weight: 600;
       cursor: pointer;
     }
-    button:hover {
-      background: #1d4ed8;
-    }
     .result {
       margin-top: 30px;
       padding: 20px;
       background: #f9fafb;
       border-radius: 10px;
     }
-    .result p {
-      margin: 6px 0;
-      font-size: 15px;
-    }
-    .highlight {
-      font-weight: 700;
-      color: #111827;
-    }
+    .highlight { font-weight: 700; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Calculadora de Cargo de Confiança</h1>
+    <h1>Calculadora – Cargo de Confiança (Folha Mensal)</h1>
 
     <h2>Dados do Colaborador</h2>
     <div class="grid">
@@ -95,59 +79,69 @@
     <h2>Férias</h2>
     <div class="grid">
       <div>
-        <label>Data Início das Férias</label>
+        <label>Início das Férias</label>
         <input type="date" id="inicioFerias" />
       </div>
       <div>
-        <label>Data Fim das Férias</label>
+        <label>Fim das Férias</label>
         <input type="date" id="fimFerias" />
       </div>
     </div>
 
-    <button onclick="calcular()">Calcular</button>
+    <button onclick="calcular()">Calcular Folha</button>
 
     <div class="result" id="resultado" style="display:none"></div>
   </div>
 
-  <script>
-    function formatar(valor) {
-      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
+<script>
+function formatar(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
-    function calcularDias(inicio, fim) {
-      const dataInicio = new Date(inicio);
-      const dataFim = new Date(fim);
-      const diff = (dataFim - dataInicio) / (1000 * 60 * 60 * 24);
-      return diff + 1;
-    }
+function diasEntre(inicio, fim) {
+  const d1 = new Date(inicio);
+  const d2 = new Date(fim);
+  return Math.floor((d2 - d1) / (1000*60*60*24)) + 1;
+}
 
-    function calcular() {
-      const salarioBase = parseFloat(document.getElementById('salarioBase').value);
-      const liquidoAlvo = parseFloat(document.getElementById('liquidoAlvo').value);
-      const inicio = document.getElementById('inicioFerias').value;
-      const fim = document.getElementById('fimFerias').value;
+function calcularINSS(base) {
+  if (base <= 1412) return base * 0.075;
+  if (base <= 2666.68) return base * 0.09;
+  if (base <= 4000.03) return base * 0.12;
+  return base * 0.14;
+}
 
-      if (!salarioBase || !liquidoAlvo || !inicio || !fim) {
-        alert('Preencha todos os campos');
-        return;
-      }
+function calcular() {
+  const salarioBase = parseFloat(document.getElementById('salarioBase').value);
+  const liquidoAlvo = parseFloat(document.getElementById('liquidoAlvo').value);
+  const inicio = document.getElementById('inicioFerias').value;
+  const fim = document.getElementById('fimFerias').value;
 
-      const diasFerias = calcularDias(inicio, fim);
-      const valorDia = liquidoAlvo / 30;
-      const feriasLiquidas = valorDia * diasFerias;
-      const umTerco = feriasLiquidas / 3;
-      const feriasPagas = feriasLiquidas + umTerco;
-      const saldoFolha = liquidoAlvo - feriasPagas;
+  if (!salarioBase || !liquidoAlvo || !inicio || !fim) {
+    alert('Preencha todos os campos');
+    return;
+  }
 
-      const resultado = document.getElementById('resultado');
-      resultado.style.display = 'block';
-      resultado.innerHTML = `
-        <p>Dias de férias: <span class="highlight">${diasFerias}</span></p>
-        <p>Líquido total do mês: <span class="highlight">${formatar(liquidoAlvo)}</span></p>
-        <p>Férias pagas antecipadamente (com 1/3): <span class="highlight">${formatar(feriasPagas)}</span></p>
-        <p>Saldo a receber na folha: <span class="highlight">${formatar(saldoFolha)}</span></p>
-      `;
-    }
-  </script>
+  const diasFerias = diasEntre(inicio, fim);
+  const diasTrabalhados = 30 - diasFerias;
+
+  const baseProporcional = salarioBase / 30 * diasTrabalhados;
+  const inss = calcularINSS(baseProporcional);
+  const fgts = baseProporcional * 0.08;
+
+  const liquidoFolha = liquidoAlvo * (diasTrabalhados / 30);
+
+  const resultado = document.getElementById('resultado');
+  resultado.style.display = 'block';
+  resultado.innerHTML = `
+    <p>Dias trabalhados no mês: <span class="highlight">${diasTrabalhados}</span></p>
+    <p>Base considerada (CTPS): <span class="highlight">${formatar(baseProporcional)}</span></p>
+    <p>INSS sobre a base: <span class="highlight">${formatar(inss)}</span></p>
+    <p>FGTS (8%): <span class="highlight">${formatar(fgts)}</span></p>
+    <hr />
+    <p><strong>Líquido na folha do mês:</strong> <span class="highlight">${formatar(liquidoFolha)}</span></p>
+  `;
+}
+</script>
 </body>
 </html>
